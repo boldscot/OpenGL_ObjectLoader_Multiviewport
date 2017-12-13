@@ -58,13 +58,34 @@ void World::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
+	//Move camera back to bring model into view
 	Vector3(0,0,-6).translate();
+
+	//Main viewport
+	glPushMatrix();
+		glTranslatef(0.0, 0.0, 0.0);
+		glViewport(0, 0, (GLsizei) glutGet(GLUT_WINDOW_WIDTH), (GLsizei) glutGet(GLUT_WINDOW_HEIGHT));
+		// Change line width and colour
+		glColor3f(1.0f, 0, 0);
+		glLineWidth(3);
+			glBegin(GL_LINES);
+				glVertex3f(0.0f, -100.0f, 0.0f);
+				glVertex3f(0.0f, 100.0f, 0.0f);
+				glVertex3f(-100.0f, 0.0f, 0.0f);
+				glVertex3f(100.0f, 0.0f, 0.0f);
+			glEnd();
+	glPopMatrix();
+
+	// Change line width and colour
+	glLineWidth(1);
+	glColor3f(0, 1.0f, 0);
 
 	//Viewport 1
 	glPushMatrix();
-		glTranslatef(0, -0.5, 0);
-		glViewport(0, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
+		glTranslatef(0, -0.5, 0.0);
+		glViewport(0.0f, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
+		glRotatef(45, 0.0, 0, 1.0f);
 		theModel.render();
 	glPopMatrix();
 

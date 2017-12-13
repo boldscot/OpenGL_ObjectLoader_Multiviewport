@@ -29,7 +29,6 @@ ModelObject::ModelObject(std::istream &is) {
 			std::string buf;
 			getline(is, buf);
 		}
-		if (!stillGroup) std::cout << "It's the end of the world as we know it!" << std::endl;
 	} while (!is.eof());
 	is.putback(indicator[0]);
 }
