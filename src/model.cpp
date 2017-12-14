@@ -15,7 +15,7 @@ Model::Model()
 bool Model::load(std::istream &is) {
 	std::string indicator;
 	while (is >> indicator) {
-		std::cout << "-----model> " << indicator << " <model-----" << std::endl;
+		//std::cout << "-----model> " << indicator << " <model-----" << std::endl;
 		if (indicator == "#") {
 			std::string buf;
 			getline(is, buf);

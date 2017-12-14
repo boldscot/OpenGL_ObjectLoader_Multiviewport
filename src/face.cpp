@@ -17,10 +17,9 @@ Face::Face(std::istream &is) {
 		is >> vertices[i];
 		is >> ch1;
 		is >> textures[i];
-
-		std::cout << "VERTS = " << vertices[i] << std::endl;
-		std::cout << "CH1 = " << ch1 << std::endl;
-		std::cout << "TEXTS = " << textures[i] << std::endl;
+		//std::cout << "VERTS = " << vertices[i] << std::endl;
+		//std::cout << "CH1 = " << ch1 << std::endl;
+		//std::cout << "TEXTS = " << textures[i] << std::endl;
 	}
 }
 
@@ -30,7 +29,7 @@ void Face::render(std::vector <Vector3> &defaultTable) {
 		glVertex3f( defaultTable[vertices[i] - 1].X,
 				defaultTable[vertices[i] - 1].Y,
 				defaultTable[vertices[i] - 1].Z );
-		std::cout << defaultTable[vertices[i] - 1].X << " " << defaultTable[vertices[i] - 1].Y << " " << defaultTable[vertices[i] - 1].Z << std::endl;
+		//std::cout << defaultTable[vertices[i] - 1].X << " " << defaultTable[vertices[i] - 1].Y << " " << defaultTable[vertices[i] - 1].Z << std::endl;
 	}
 	glEnd();
 }

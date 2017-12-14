@@ -17,12 +17,12 @@ ModelObject::ModelObject(std::istream &is) {
 	bool stillGroup=true;
 	do {
 		is >> indicator;
-		std::cout << "----------> " << indicator << " <------------" << std::endl;
+		//std::cout << "----------> " << indicator << " <------------" << std::endl;
 		if (indicator == "v") {
 			vertices.push_back(Vector3(is));
 		} else if (indicator == "f") {
 			faces.push_back(Face(is));
-			std::cout << "Faces size = " << faces.size() << std::endl;
+			//std::cout << "Faces size = " << faces.size() << std::endl;
 		} else if (indicator == "g") {
 			stillGroup = false;
 		} else {
@@ -34,7 +34,7 @@ ModelObject::ModelObject(std::istream &is) {
 }
 
 void ModelObject::render(std::vector <Vector3> &defaultTable) {
-	std::cout << " rendering " << name << " with " << faces.size()  << std::endl;
+	//std::cout << " rendering " << name << " with " << faces.size()  << std::endl;
 	for (unsigned int i = 0; i < faces.size(); i++) {
 		faces[i].render(defaultTable);
 	}

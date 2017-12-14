@@ -13,9 +13,59 @@
 #include "vector3.h"
 #include "color.h"
 #include <fstream>
+#include <iostream>
 using namespace std;
 
 World* World::s_World = NULL;
+
+// Struct to hold rotations and movements for view ports
+struct Camera {
+	// Camera counters
+	static int camCounter;
+	int camNum;
+	// Rotation and translate
+	float angX; float angY; float angZ;
+	float posX; float posY; float posZ;
+	// Active cam and move mode
+	bool isActive;
+	bool isRotate;
+
+	Camera() {
+		camNum = ++camCounter;
+		angX=angY=angZ=0.0f;
+		posX=posZ=posY=0.0f;
+		isRotate =isActive= false;
+	}
+
+	void rotate() {
+		glRotatef(angX, 1.0f, 0.0, 0.0);
+		glRotatef(angY, 0.0, 1.0f, 0.0);
+		glRotatef(angZ, 0.0, 0.0, 1.0f);
+	}
+
+	void move() {
+		glTranslatef(posX, posY-0.5, posZ);
+	}
+
+	void reset() {
+		angX=angY=angZ=0.0f;
+		posX=posZ=posY=0.0f;
+	}
+} view_One, view_Two, view_Three, view_Four;
+
+//Store reference to  Active camera
+Camera *activeCam= &view_One;
+//init camCounter
+int Camera::camCounter = 0;
+
+//Function to change the active camera
+Camera* changeCam(Camera &cam) {
+	activeCam->isActive=false;
+	cam.isActive=true;
+	std::cout << cam.camNum << std::endl;
+	return &cam;
+}
+
 
 void World::loadModel (std::string modelName) {
 	ifstream inStream;
@@ -63,7 +113,6 @@ void World::render() {
 
 	//Main viewport
 	glPushMatrix();
-		glTranslatef(0.0, 0.0, 0.0);
 		glViewport(0, 0, (GLsizei) glutGet(GLUT_WINDOW_WIDTH), (GLsizei) glutGet(GLUT_WINDOW_HEIGHT));
 		// Change line width and colour
 		glColor3f(1.0f, 0, 0);
@@ -82,33 +131,41 @@ void World::render() {
 
 	//Viewport 1
 	glPushMatrix();
-		glTranslatef(0, -0.5, 0.0);
+		view_One.move();
+		view_One.rotate();
 		glViewport(0.0f, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
-		glRotatef(45, 0.0, 0, 1.0f);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		theModel.render();
 	glPopMatrix();
 
 	//Viewport 2
 	glPushMatrix();
-		glTranslatef(0, -0.5, 0);
+		view_Two.move();
+		view_Two.rotate();
 		glViewport((GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		theModel.render();
 	glPopMatrix();
 
 	//Viewport 3
 	glPushMatrix();
-		glTranslatef(0, -0.5, 0);
+		view_Three.move();
+		view_Three.rotate();
 		glViewport(0, 0, (GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		theModel.render();
 	glPopMatrix();
 
+	glPointSize(2.0f);
 	//Viewport 4
 	glPushMatrix();
-		glTranslatef(0, -0.5, 0);
+		view_Four.move();
+		view_Four.rotate();
 		glViewport((GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, 0,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		theModel.render();
 	glPopMatrix();
 
@@ -116,11 +173,41 @@ void World::render() {
 }
 
 void World::keyPress(unsigned char ch) {
+	if (ch == '1' && !view_One.isActive) activeCam=changeCam(view_One);
+	if (ch == '2' && !view_Two.isActive) activeCam=changeCam(view_Two);
+	if (ch == '3' && !view_Three.isActive) activeCam=changeCam(view_Three);
+	if (ch == '4' && !view_Four.isActive) activeCam=changeCam(view_Four);
+	if (ch == 'm' || ch == 'M') activeCam->isRotate= !activeCam->isRotate;
+	if (ch == 'z' || ch == 'Z') activeCam->posZ+=0.1;
+	if (ch == 'x' || ch == 'X') activeCam->posZ-=0.1;
+	glutPostRedisplay();
+}
+
+void specialKeys(int key, int x, int y) {
+	if (key == GLUT_KEY_UP) {
+		if (activeCam->isRotate) activeCam->angX-=5.0f;
+		else activeCam->posY-=0.1f;
+	}
+	if (key == GLUT_KEY_DOWN) {
+		if (activeCam->isRotate) activeCam->angX+=5.0f;
+		else activeCam->posY+=0.1f;
+	}
+	if (key == GLUT_KEY_LEFT) {
+		if (activeCam->isRotate) activeCam->angY-=5.0f;
+		else activeCam->posX-=0.1f;
+	}
+	if (key == GLUT_KEY_RIGHT) {
+		if (activeCam->isRotate) activeCam->angY+=5.0f;
+		else activeCam->posX+=0.1f;
+	}
 	glutPostRedisplay();
 }
 
 
 void World::initialize(int width, int height, std::string name) {
+	//set 1st view port to active window
+	activeCam->isActive=true;
+
 	glutInit(argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
@@ -141,6 +228,7 @@ void World::initialize(int width, int height, std::string name) {
 
 	//glTranslatef(0.0f, 0.0f, -200.0f);
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(specialKeys);
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(renderScene);
 }
