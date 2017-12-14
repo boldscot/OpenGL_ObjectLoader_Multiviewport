@@ -10,7 +10,11 @@
 int main(int argc, char* argv[]) {
   theWorld.setCmdlineParams(&argc, argv);
   theWorld.initialize(800,600, "First World");
-  theWorld.loadModel("src/horse.obj");
+  //load a model for each viewport
+  theWorld.loadModel("src/knight.obj");
+  theWorld.loadModel("src/pawn.obj");
+  theWorld.loadModel("src/cube.obj");
+
   theWorld.start();
   return 0;
 }

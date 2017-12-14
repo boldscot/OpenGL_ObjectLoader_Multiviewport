@@ -12,11 +12,14 @@
 #include "freeglut.h"
 #include "vector3.h"
 #include "color.h"
+#include <math.h>
 #include <fstream>
 #include <iostream>
 using namespace std;
 
 World* World::s_World = NULL;
+//timer controller
+bool isTimerOn= false;
 
 // Struct to hold rotations and movements for view ports
 struct Camera {
@@ -66,13 +69,42 @@ Camera* changeCam(Camera &cam) {
 	return &cam;
 }
 
+void reset() {
+	view_One.reset();
+	view_Two.reset();
+	view_Three.reset();
+	view_Four.reset();
+	isTimerOn = false;
+}
+
+void timerFunction(int value) {
+	if (isTimerOn) {
+		//view one
+		view_One.angX+=1;
+		view_One.angY+=3;
+		//view two
+		view_Two.angY+=2;
+		view_Two.angZ+=2;
+		//view three
+		view_Three.angY+=2;
+		view_Three.angZ+=2;
+		//view four
+		view_Four.angX-=3;
+		view_Four.angZ-=1;
+		glutPostRedisplay();
+	}
+	glutTimerFunc(40, timerFunction, 1);
+}
 
 void World::loadModel (std::string modelName) {
 	ifstream inStream;
 	inStream.open(modelName.c_str(), ios::in);
 	if (!inStream.fail()) {
-		theModel.load(inStream);
+		if (modelName=="src/knight.obj")knightModel.load(inStream);
+		else if (modelName=="src/cube.obj")cubeModel.load(inStream);
+		else if (modelName=="src/pawn.obj")pawnModel.load(inStream);
 	}
+	inStream.close();
 }
 
 void reshape(int w, int h) {
@@ -109,7 +141,7 @@ void World::render() {
 	glLoadIdentity();
 
 	//Move camera back to bring model into view
-	Vector3(0,0,-6).translate();
+	Vector3(0,0,-3).translate();
 
 	//Main viewport
 	glPushMatrix();
@@ -136,7 +168,7 @@ void World::render() {
 		glViewport(0.0f, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		theModel.render();
+		pawnModel.render();
 	glPopMatrix();
 
 	//Viewport 2
@@ -146,7 +178,7 @@ void World::render() {
 		glViewport((GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		theModel.render();
+		cubeModel.render();
 	glPopMatrix();
 
 	//Viewport 3
@@ -155,7 +187,7 @@ void World::render() {
 		view_Three.rotate();
 		glViewport(0, 0, (GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		theModel.render();
+		knightModel.render();
 	glPopMatrix();
 
 	glPointSize(2.0f);
@@ -166,7 +198,7 @@ void World::render() {
 		glViewport((GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, 0,
 				(GLsizei) glutGet(GLUT_WINDOW_WIDTH)/2, (GLsizei) glutGet(GLUT_WINDOW_HEIGHT)/2);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		theModel.render();
+		knightModel.render();
 	glPopMatrix();
 
 	glutSwapBuffers();
@@ -180,6 +212,8 @@ void World::keyPress(unsigned char ch) {
 	if (ch == 'm' || ch == 'M') activeCam->isRotate= !activeCam->isRotate;
 	if (ch == 'z' || ch == 'Z') activeCam->posZ+=0.1;
 	if (ch == 'x' || ch == 'X') activeCam->posZ-=0.1;
+	if (ch == 't' || ch == 'T') isTimerOn = !isTimerOn;
+	if (ch == 'r' || ch == 'R') reset();
 	glutPostRedisplay();
 }
 
@@ -214,7 +248,8 @@ void World::initialize(int width, int height, std::string name) {
 	glutCreateWindow(name.c_str());
 
 	Color::Black.renderClear();
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT,GL_LINE);
 	glPolygonMode(GL_BACK,GL_LINE);
@@ -231,6 +266,7 @@ void World::initialize(int width, int height, std::string name) {
 	glutSpecialFunc(specialKeys);
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(renderScene);
+	glutTimerFunc(40, timerFunction, 1);
 }
 
 void World::start() {

@@ -28,5 +28,7 @@ class World {
 
     int   *argc;
     char **argv;
-    Model theModel;
+    Model cubeModel;
+    Model knightModel;
+    Model pawnModel;
 };
